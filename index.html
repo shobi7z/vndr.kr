@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>VNDR.KR | منتجات كورية أصلية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;900&display=swap">
+  <style>
+    body {
+      font-family: 'Tajawal', Arial, sans-serif;
+      background: #f6f6f6;
+      margin: 0;
+      padding: 0;
+      color: #222;
+      min-height: 100vh;
+    }
+    header {
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 0 20px 0;
+      box-shadow: 0 2px 16px #e7eaf5a9;
+      font-size: 2.1em;
+      font-weight: 900;
+      font-family: 'Tajawal',Arial,sans-serif;
+      letter-spacing: 2px;
+      border-bottom: 1px solid #eee;
+      color: #1a1a1a;
+      margin-bottom: 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .kr-flag {
+      width: 40px;
+      height: 28px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px #cdcdcd44;
+      border: 1px solid #eee;
+      margin-left: 12px;
+      margin-right: 8px;
+      background: #fff;
+      object-fit: cover;
+      display: inline-block;
+    }
+    .hero-image {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: none;
+      margin: 0;
+      padding: 0;
+    }
+    .hero-image img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 0;
+      box-shadow: 0 4px 32px #e7eaf511;
+    }
+    .brand-select {
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      border-bottom: 1px solid #eee;
+      padding: 28px 0 28px 0;
+      box-shadow: 0 1px 8px #e7eaf511;
+      margin-bottom: 0;
+      flex-wrap: wrap;
+    }
+    .brand-btn {
+      padding: 18px 60px;
+      font-size: 1.25em;
+      font-family: 'Tajawal',Arial,sans-serif;
+      font-weight: 700;
+      background: #fff;
+      color: #303030;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #e7eaf512;
+      cursor: pointer;
+      letter-spacing: 1.5px;
+      margin-bottom: 0;
+      margin-top: 0;
+      margin-right: 0;
+      outline: none;
+      transition: border 0.2s, background 0.18s, color 0.16s, box-shadow 0.17s;
+      min-width: 120px;
+      position: relative;
+    }
+    .brand-btn.active,
+    .brand-btn:hover {
+      background: #222;
+      color: #fff;
+      border: 2px solid #222;
+      box-shadow: 0 6px 24px #22222233;
+      z-index: 2;
+    }
+    .products {
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+      gap: 38px;
+      margin: 0 auto 60px auto;
+      max-width: 1200px;
+      padding: 45px 10px 0 10px;
+      justify-items: center;
+      min-height: 300px;
+    }
+    .product-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 24px #e7eaf5a8;
+      padding: 30px 20px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+      border: 1.5px solid #f2f2f2;
+      transition: box-shadow 0.14s, border 0.13s, transform 0.13s;
+      min-width: 230px;
+      max-width: 320px;
+      min-height: 330px;
+      text-align: center;
+    }
+    .product-card:hover {
+      box-shadow: 0 10px 32px #22222244;
+      border: 1.5px solid #222;
+      transform: translateY(-5px) scale(1.04);
+    }
+    .product-card img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #f8f8f8;
+      border: 1px solid #eee;
+      box-shadow: 0 2px 14px #eee5ee22;
+      margin-bottom: 20px;
+      margin-top: 6px;
+    }
+    .product-info h3 {
+      font-size: 1.09em;
+      margin: 0 0 10px 0;
+      color: #222;
+      font-family: 'Tajawal',Arial,sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .prices {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .old-price {
+      text-decoration: line-through;
+      color: #bbb;
+      font-size: 1em;
+      font-weight: 400;
+      margin-bottom: 0;
+    }
+    .new-price {
+      font-size: 1.23em;
+      font-weight: bold;
+      color: #222;
+      background: none;
+      margin-bottom: 0;
+      letter-spacing: .2px;
+    }
+    .discount {
+      display: inline-block;
+      color: #fff;
+      background: #e74c3c;
+      font-weight: bold;
+      font-size: 0.97em;
+      padding: 3px 17px;
+      border-radius: 9px;
+      margin-bottom: 0;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+    .brand-label {
+      font-size: 1.01em;
+      color: #666;
+      font-weight: bold;
+      margin-top: 8px;
+      letter-spacing: .7px;
+      background: #f6f6f6;
+      border-radius: 7px;
+      padding: 2px 12px;
+      display: inline-block;
+    }
+    .modal-bg {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background: rgba(40,25,56,0.09);
+      display: none;
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(1.5px);
+    }
+    .modal {
+      background: #fff;
+      border-radius: 24px;
+      max-width: 410px;
+      width: 95vw;
+      padding: 32px 18px 28px 18px;
+      box-shadow: 0 12px 48px #22222229;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      animation: showModal 0.35s cubic-bezier(.29,.9,.53,1.12);
+      border: 1.5px solid #222;
+      text-align: center;
+    }
+    @keyframes showModal {
+      0%{ opacity:0; transform:scale(.6);}
+      100%{ opacity:1; transform:scale(1);}
+    }
+    .modal img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      border-radius: 13px;
+      border: 1.5px solid #eee;
+      background: #f8f8f8;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px #22222211;
+    }
+    .modal h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.2em;
+      color: #222;
+      font-family: 'Tajawal',Arial,sans-serif;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: .7px;
+    }
+    .modal .modal-prices {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 1.09em;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .modal .old-price {color: #bbb;}
+    .modal .new-price {color: #222;}
+    .modal .discount {
+      display: inline-block;
+      color: #fff;
+      background: #e74c3c;
+      font-weight: bold;
+      font-size: 1em;
+      padding: 4px 17px;
+      border-radius: 9px;
+      margin-bottom: 0;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+    .modal .brand-label {
+      margin-bottom: 9px;
+      font-size: 1.01em;
+      color: #666;
+      font-weight: bold;
+      letter-spacing: .7px;
+      background: #f6f6f6;
+      border-radius: 7px;
+      padding: 2px 12px;
+      display: inline-block;
+    }
+    .modal .close-btn {
+      position: absolute;
+      top: 13px; right: 17px;
+      background: #eee;
+      color: #222;
+      font-size: 1.5em;
+      border: none;
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #ccc;
+      transition: background 0.2s;
+      font-family: 'Tajawal',Arial,sans-serif;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal .close-btn:hover {
+      background: #e74c3c;
+      color: #fff;
+    }
+    .modal .modal-details {
+      text-align: center;
+      font-size: 1.07em;
+      margin-top: 13px;
+      color: #444;
+      line-height: 1.7;
+      font-family: 'Tajawal',Arial,sans-serif;
+      background: #f6f6f6;
+      border-radius: 8px;
+      padding: 10px 8px;
+      margin-bottom: 6px;
+    }
+    @media (max-width:800px) {
+      .products { grid-template-columns: 1fr 1fr; gap: 15px;}
+      .product-card {min-width: 170px;max-width: 99vw;}
+      .brand-btn {padding: 12px 15vw;}
+    }
+    @media (max-width:600px) {
+      header { font-size: 1.1em; padding: 15px 0 7px 0; }
+      .kr-flag {width:28px;height:20px;}
+      .hero-image img {max-width:100vw;}
+      .brand-select {padding:17px 0 17px 0;}
+      .brand-btn {padding:10px 8vw;font-size:1em;}
+      .products { grid-template-columns: 1fr; gap: 13px;}
+      .product-card img {width:80px;height:80px;}
+      .modal img {width:80px;height:80px;}
+      .modal {padding: 12px 6px 10px 6px; max-width: 98vw;}
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDg8cfAhHERZ1vigJo85xrozYDx5MrGpI",
+      authDomain: "vndrexpress.firebaseapp.com",
+      projectId: "vndrexpress",
+      storageBucket: "vndrexpress.firebasestorage.app",
+      messagingSenderId: "1023632565902",
+      appId: "1:1023632565902:web:a13e07dd66f563ce77cbdf",
+      measurementId: "G-CQCRZZBJHK"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // جلب كل الماركات (الأزرار)
+    async function getBrands() {
+      const q = query(collection(db, "brands"));
+      const querySnapshot = await getDocs(q);
+      const brands = [];
+      querySnapshot.forEach(docSnap => {
+        brands.push(docSnap.data().name);
+      });
+      return brands;
+    }
+
+    // جلب المنتجات حسب الماركة
+    async function getProductsByBrand(brand) {
+      const q = query(collection(db, "products"), where("brand", "==", brand));
+      const querySnapshot = await getDocs(q);
+      const products = [];
+      querySnapshot.forEach(doc => {
+        products.push(doc.data());
+      });
+      return products;
+    }
+
+    // عرض المنتجات حسب الماركة
+    async function showProducts(brand) {
+      document.querySelectorAll('.brand-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`btn-${brand.replace(/\s+/g,'_')}`).classList.add('active');
+      const productsDiv = document.getElementById('products');
+      productsDiv.style.display = 'grid';
+      productsDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;font-weight:bold;">جاري التحميل...</p>';
+      const products = await getProductsByBrand(brand);
+      productsDiv.innerHTML = '';
+      if (products.length === 0) {
+        productsDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;font-weight:bold;">لا يوجد منتجات حالياً لهذه الماركة.</p>';
+        return;
+      }
+      products.forEach((prod,i) => {
+        const discount = prod.oldPrice && prod.price
+          ? ((prod.oldPrice - prod.price) / prod.oldPrice * 100).toFixed(0)
+          : '';
+        productsDiv.innerHTML += `
+          <div class="product-card" data-idx="${i}">
+            <img src="${prod.image}" alt="${prod.name}">
+            <div class="product-info">
+              <h3>${prod.name}</h3>
+              <div class="prices">
+                ${prod.oldPrice ? `<span class="old-price">${prod.oldPrice} د.ع</span>` : ''}
+                <span class="new-price">${prod.price} د.ع</span>
+                ${discount ? `<span class="discount">خصم ${discount}%</span>` : ''}
+              </div>
+              <div class="brand-label">${prod.brand}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.onclick = () => {
+          const idx = card.dataset.idx;
+          showModal(products[idx]);
+        };
+      });
+    }
+
+    // نافذة التفاصيل المنبثقة
+    function showModal(prod) {
+      const discount = prod.oldPrice && prod.price
+        ? ((prod.oldPrice - prod.price) / prod.oldPrice * 100).toFixed(0)
+        : '';
+      const modalBg = document.getElementById('modal-bg');
+      const modal = document.getElementById('modal');
+      modal.innerHTML = `
+        <button class="close-btn" id="close-modal" title="إغلاق">&times;</button>
+        <img src="${prod.image}" alt="${prod.name}">
+        <h2>${prod.name}</h2>
+        <div class="modal-prices">
+          ${prod.oldPrice ? `<span class="old-price">${prod.oldPrice} د.ع</span>` : ''}
+          <span class="new-price">${prod.price} د.ع</span>
+          ${discount ? `<span class="discount">خصم ${discount}%</span>` : ''}
+        </div>
+        <div class="brand-label">${prod.brand}</div>
+        <div class="modal-details">
+          ${prod.details ? prod.details : "منتج أصلي من أفضل الماركات الكورية. آمن للبشرة وفعال."}
+        </div>
+      `;
+      modalBg.style.display = 'flex';
+      document.getElementById('close-modal').onclick = () => { modalBg.style.display='none'; };
+      modalBg.onclick = e => { if(e.target === modalBg) modalBg.style.display='none'; };
+    }
+
+    // بناء أزرار الماركات ديناميكياً
+    async function renderBrandsUI() {
+      const brands = await getBrands();
+      const brandsDiv = document.getElementById('brands');
+      brandsDiv.innerHTML = '';
+      brands.forEach((b, idx) => {
+        brandsDiv.innerHTML += `
+          <button class="brand-btn" id="btn-${b.replace(/\s+/g,'_')}" onclick="window.showProductsUI('${b}')">
+            ${b}
+          </button>
+        `;
+      });
+      // المنتجات لا تظهر إلا عند الضغط على زر
+      document.getElementById('products').style.display = 'none';
+      window.showProductsUI = showProducts;
+    }
+
+    window.onload = function() {
+      renderBrandsUI();
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <span style="font-size:1.2em;margin-left:8px;">VNDR.KR</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg" alt="علم كوريا الجنوبية" class="kr-flag">
+  </header>
+  <div class="hero-image">
+    <img src="https://i.imgur.com/bvRzX3G.png" alt="واجهة كوزمتك كورية من باب بيتك">
+  </div>
+  <div class="brand-select" id="brands"></div>
+  <div class="products" id="products"></div>
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal" id="modal"></div>
+  </div>
+</body>
+</html>
