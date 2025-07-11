@@ -70,7 +70,7 @@
       border-bottom: 1px solid #eee;
     }
     .brand-block {
-      margin-bottom: 48px;
+      margin-bottom: 60px;
       padding-bottom: 0;
       border-bottom: 1px solid #f0f0f0;
     }
@@ -103,21 +103,33 @@
       text-align: center;
       display: block;
     }
-    .products {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
-      gap: 38px;
-      margin: 0 auto 40px auto;
-      max-width: 1200px;
-      padding: 0 10px 0 10px;
-      justify-items: center;
-      min-height: 130px;
+    /* شريط المنتجات المتحرك */
+    .products-carousel {
+      overflow-x: auto;
+      display: flex;
+      flex-direction: row;
+      gap: 32px;
+      padding: 0 18px 0 18px;
+      scroll-behavior: smooth;
+      margin-bottom: 12px;
+    }
+    .products-carousel::-webkit-scrollbar {
+      height: 10px;
+    }
+    .products-carousel::-webkit-scrollbar-thumb {
+      background: #222;
+      border-radius: 5px;
+    }
+    .products-carousel::-webkit-scrollbar-track {
+      background: #eee;
+      border-radius: 5px;
     }
     .product-card {
+      flex: 0 0 320px;
       background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 2px 24px #e7eaf5a8;
-      padding: 30px 20px 20px 20px;
+      border-radius: 22px;
+      box-shadow: 0 4px 32px #e7eaf5a8;
+      padding: 40px 28px 28px 28px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -125,79 +137,90 @@
       cursor: pointer;
       border: 1.5px solid #f2f2f2;
       transition: box-shadow 0.14s, border 0.13s, transform 0.13s;
-      min-width: 230px;
-      max-width: 320px;
-      min-height: 330px;
+      min-width: 320px;
+      max-width: 340px;
+      min-height: 390px;
       text-align: center;
     }
     .product-card:hover {
-      box-shadow: 0 10px 32px #22222244;
-      border: 1.5px solid #222;
-      transform: translateY(-5px) scale(1.04);
+      box-shadow: 0 12px 40px #22222255;
+      border: 2px solid #222;
+      transform: translateY(-8px) scale(1.06);
     }
     .product-card img {
-      width: 120px;
-      height: 120px;
+      width: 170px;
+      height: 170px;
       object-fit: contain;
-      border-radius: 12px;
+      border-radius: 16px;
       background: #f8f8f8;
-      border: 1px solid #eee;
+      border: 1.5px solid #eee;
       box-shadow: 0 2px 14px #eee5ee22;
-      margin-bottom: 20px;
+      margin-bottom: 27px;
       margin-top: 6px;
+      transition: transform 0.14s;
+    }
+    .product-card:hover img {
+      transform: scale(1.07);
     }
     .product-info h3 {
-      font-size: 1.09em;
-      margin: 0 0 10px 0;
+      font-size: 1.15em;
+      margin: 0 0 14px 0;
       color: #222;
       font-family: 'Tajawal',Arial,sans-serif;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.7px;
     }
     .prices {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 5px;
     }
     .old-price {
       text-decoration: line-through;
       color: #bbb;
-      font-size: 1em;
+      font-size: 1.07em;
       font-weight: 400;
       margin-bottom: 0;
     }
     .new-price {
-      font-size: 1.23em;
+      font-size: 1.35em;
       font-weight: bold;
       color: #222;
       background: none;
       margin-bottom: 0;
-      letter-spacing: .2px;
+      letter-spacing: .3px;
     }
     .discount {
       display: inline-block;
       color: #fff;
       background: #e74c3c;
       font-weight: bold;
-      font-size: 0.97em;
-      padding: 3px 17px;
+      font-size: 1.05em;
+      padding: 5px 17px;
       border-radius: 9px;
       margin-bottom: 0;
       letter-spacing: 1px;
       margin-top: 5px;
     }
     .brand-label {
-      font-size: 1.01em;
+      font-size: 1.06em;
       color: #666;
       font-weight: bold;
-      margin-top: 8px;
+      margin-top: 12px;
       letter-spacing: .7px;
       background: #f6f6f6;
-      border-radius: 7px;
-      padding: 2px 12px;
+      border-radius: 9px;
+      padding: 3px 12px;
       display: inline-block;
+    }
+    .no-products {
+      padding: 28px 0 0 0;
+      text-align: center;
+      color: #e74c3c;
+      font-weight: bold;
+      font-size: 1.1em;
     }
     .modal-bg {
       position: fixed;
@@ -230,13 +253,13 @@
       100%{ opacity:1; transform:scale(1);}
     }
     .modal img {
-      width: 140px;
-      height: 140px;
+      width: 170px;
+      height: 170px;
       object-fit: contain;
-      border-radius: 13px;
+      border-radius: 16px;
       border: 1.5px solid #eee;
       background: #f8f8f8;
-      margin-bottom: 15px;
+      margin-bottom: 19px;
       box-shadow: 0 4px 12px #22222211;
     }
     .modal h2 {
@@ -312,20 +335,22 @@
       padding: 10px 8px;
       margin-bottom: 6px;
     }
-    @media (max-width:800px) {
-      .products { grid-template-columns: 1fr 1fr; gap: 15px;}
-      .product-card {min-width: 170px;max-width: 99vw;}
-      .brand-btn-title {padding: 12px 15vw; height: 54px; font-size: 1.1em;}
+    @media (max-width:1000px) {
+      .products-carousel {gap:18px;}
+      .product-card {min-width:260px;max-width:99vw;}
+      .brand-btn-title {font-size:1.1em; height:54px;}
+    }
+    @media (max-width:650px) {
+      .product-card {min-width:210px;max-width:98vw;padding:20px 7px 20px 7px;}
+      .product-card img, .modal img {width:95px;height:95px;}
+      .brand-btn-title {height:38px;font-size:.98em;}
     }
     @media (max-width:600px) {
       header { font-size: 1.1em; padding: 15px 0 7px 0; }
       .kr-flag {width:28px;height:20px;}
       .hero-image img {max-width:100vw;}
       .brands-section {padding:17px 0 0 0;}
-      .brand-btn-title {padding:10px 3vw;height:46px;font-size:1em;}
-      .products { grid-template-columns: 1fr; gap: 13px;}
-      .product-card img {width:80px;height:80px;}
-      .modal img {width:80px;height:80px;}
+      .brand-btn-title {padding:10px 3vw;height:38px;}
       .modal {padding: 12px 6px 10px 6px; max-width: 98vw;}
     }
   </style>
@@ -367,24 +392,24 @@
       return products;
     }
 
-    // بناء واجهة جميع الماركات مع المنتجات تحت كل ماركة مباشرة
+    // بناء واجهة جميع الماركات مع المنتجات بشكل أفقي (سلايدر يمين ويسار)
     async function renderBrandsWithProducts() {
       const brands = await getBrands();
       const brandsSection = document.getElementById('brands-section');
       brandsSection.innerHTML = '';
       for (let i = 0; i < brands.length; i++) {
         const brand = brands[i];
-        // عنصر ماركة وزرها
+        // عنصر ماركة وزرها المستطيل الطويل
         const brandBlock = document.createElement('div');
         brandBlock.className = 'brand-block';
-        brandBlock.innerHTML = `<div class="brand-btn-title"><span>${brand}</span></div><div class="products" id="products-${brand.replace(/\s+/g,'_')}"></div>`;
+        brandBlock.innerHTML = `<div class="brand-btn-title"><span>${brand}</span></div><div class="products-carousel" id="products-${brand.replace(/\s+/g,'_')}"></div>`;
         brandsSection.appendChild(brandBlock);
 
         // جلب منتجات هذه الماركة
         const products = await getProductsByBrand(brand);
-        const productsDiv = brandBlock.querySelector('.products');
+        const productsDiv = brandBlock.querySelector('.products-carousel');
         if (products.length === 0) {
-          productsDiv.innerHTML = '<p style="text-align:center;color:#e74c3c;font-weight:bold;">لا يوجد منتجات حالياً لهذه الماركة.</p>';
+          productsDiv.innerHTML = '<div class="no-products">لا يوجد منتجات حالياً لهذه الماركة.</div>';
         } else {
           products.forEach((prod,i) => {
             const discount = prod.oldPrice && prod.price
