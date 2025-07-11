@@ -107,8 +107,8 @@
       overflow-x: auto;
       display: flex;
       flex-direction: row;
-      gap: 18px;
-      padding: 0 8px 0 8px;
+      gap: 30px;
+      padding: 0 14px 0 14px;
       scroll-behavior: smooth;
       margin-bottom: 12px;
     }
@@ -123,69 +123,72 @@
       background: #eee;
       border-radius: 5px;
     }
+    /* زيادة حجم إطار وصورة المنتج */
     .product-card {
-      flex: 0 0 300px;
+      flex: 0 0 370px;
       background: #fff;
-      border-radius: 22px;
-      box-shadow: 0 4px 32px #e7eaf5a8;
-      padding: 28px 16px 24px 16px;
+      border-radius: 34px;
+      box-shadow: 0 4px 48px #e7eaf5a8;
+      padding: 40px 24px 32px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
       cursor: pointer;
-      border: 1.5px solid #f2f2f2;
+      border: 3px solid #377dcb;
       transition: box-shadow 0.14s, border 0.13s, transform 0.13s;
-      min-width: 230px;
-      max-width: 320px;
-      min-height: 330px;
+      min-width: 370px;
+      max-width: 400px;
+      min-height: 420px;
       text-align: center;
     }
     .product-card:hover {
-      box-shadow: 0 10px 32px #22222244;
-      border: 1.5px solid #222;
-      transform: translateY(-5px) scale(1.04);
+      box-shadow: 0 12px 54px #22222255;
+      border: 3px solid #e74c3c;
+      transform: translateY(-8px) scale(1.06);
     }
     .product-card img {
-      width: 140px;
-      height: 140px;
+      width: 230px;
+      height: 230px;
       object-fit: contain;
-      border-radius: 18px;
+      border-radius: 28px;
       background: #f8f8f8;
-      border: 1.5px solid #eee;
-      box-shadow: 0 2px 14px #eee5ee22;
-      margin-bottom: 20px;
+      border: 3px solid #e7eaf5;
+      box-shadow: 0 2px 22px #eee5ee33;
+      margin-bottom: 28px;
       margin-top: 6px;
-      transition: transform 0.14s;
+      transition: transform 0.14s, box-shadow 0.14s;
       cursor: pointer;
     }
     .product-card:hover img {
       transform: scale(1.07);
+      box-shadow: 0 8px 32px #377dcb55;
+      border: 3px solid #e74c3c;
     }
     .product-info h3 {
-      font-size: 1.09em;
-      margin: 0 0 10px 0;
+      font-size: 1.25em;
+      margin: 0 0 12px 0;
       color: #222;
       font-family: 'Tajawal',Arial,sans-serif;
       font-weight: 700;
       letter-spacing: 0.5px;
     }
     .prices {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 5px;
     }
     .old-price {
       text-decoration: line-through;
       color: #bbb;
-      font-size: 1em;
+      font-size: 1.12em;
       font-weight: 400;
       margin-bottom: 0;
     }
     .new-price {
-      font-size: 1.23em;
+      font-size: 1.33em;
       font-weight: bold;
       color: #222;
       background: none;
@@ -197,22 +200,22 @@
       color: #fff;
       background: #e74c3c;
       font-weight: bold;
-      font-size: 0.97em;
-      padding: 3px 17px;
-      border-radius: 9px;
+      font-size: 1.05em;
+      padding: 5px 19px;
+      border-radius: 13px;
       margin-bottom: 0;
       letter-spacing: 1px;
       margin-top: 5px;
     }
     .brand-label {
-      font-size: 1.01em;
+      font-size: 1.07em;
       color: #666;
       font-weight: bold;
-      margin-top: 8px;
+      margin-top: 10px;
       letter-spacing: .7px;
       background: #f6f6f6;
-      border-radius: 7px;
-      padding: 2px 12px;
+      border-radius: 10px;
+      padding: 4px 14px;
       display: inline-block;
     }
     .no-products {
@@ -236,10 +239,10 @@
     }
     .img-modal {
       background: rgba(255,255,255,0.96);
-      border-radius: 28px;
+      border-radius: 38px;
       box-shadow: 0 10px 88px #22222233;
-      padding: 20px 10px;
-      max-width: 95vw;
+      padding: 30px 18px;
+      max-width: 90vw;
       max-height: 95vh;
       display: flex;
       align-items: center;
@@ -251,7 +254,7 @@
     .img-modal img {
       max-width: 80vw;
       max-height: 70vh;
-      border-radius: 22px;
+      border-radius: 36px;
       box-shadow: 0 4px 32px #377dcb44;
       border: 2.5px solid #e7eaf5;
       background: #f8f8f8;
@@ -289,10 +292,10 @@
     }
     .modal {
       background: #fff;
-      border-radius: 28px;
-      max-width: 400px;
+      border-radius: 32px;
+      max-width: 500px;
       width: 95vw;
-      padding: 28px 10px 24px 10px;
+      padding: 40px 22px 34px 22px;
       box-shadow: 0 12px 70px #22222229;
       display: flex;
       flex-direction: column;
@@ -307,66 +310,68 @@
       100%{ opacity:1; transform:scale(1);}
     }
     .modal img {
-      width: 140px;
-      height: 140px;
-      object-fit: contain;
-      border-radius: 18px;
-      border: 1.5px solid #eee;
+      width: 240px;
+      height: 240px;
+      object-fit: cover;
+      border-radius: 28px;
+      border: 2.5px solid #e7eaf5;
       background: #f8f8f8;
-      margin-bottom: 19px;
-      box-shadow: 0 4px 12px #22222211;
+      margin-bottom: 29px;
+      box-shadow: 0 8px 32px #377dcb44;
     }
     .modal h2 {
-      margin: 0 0 10px 0;
-      font-size: 1.12em;
+      margin: 0 0 18px 0;
+      font-size: 1.35em;
       color: #222;
       font-family: 'Tajawal',Arial,sans-serif;
-      font-weight: 700;
+      font-weight: 900;
       text-align: center;
-      letter-spacing: .7px;
+      letter-spacing: 1px;
     }
     .modal .modal-prices {
       text-align: center;
-      margin-bottom: 15px;
-      font-size: 1.09em;
+      margin-bottom: 18px;
+      font-size: 1.10em;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 9px;
     }
     .modal .old-price {color: #bbb;}
-    .modal .new-price {color: #222;}
+    .modal .new-price {color: #377dcb;}
     .modal .discount {
       display: inline-block;
       color: #fff;
       background: #e74c3c;
       font-weight: bold;
-      font-size: 1em;
-      padding: 4px 17px;
-      border-radius: 9px;
+      font-size: 1.08em;
+      padding: 7px 20px;
+      border-radius: 11px;
       margin-bottom: 0;
       letter-spacing: 1px;
       margin-top: 5px;
+      box-shadow: 0 2px 12px #e74c3c44;
     }
     .modal .brand-label {
-      margin-bottom: 9px;
-      font-size: 1.01em;
+      margin-bottom: 13px;
+      font-size: 1.12em;
       color: #666;
       font-weight: bold;
       letter-spacing: .7px;
       background: #f6f6f6;
-      border-radius: 7px;
-      padding: 2px 12px;
+      border-radius: 13px;
+      padding: 6px 16px;
       display: inline-block;
+      box-shadow: 0 1px 6px #e7eaf511;
     }
     .modal .close-btn {
       position: absolute;
       top: 13px; right: 17px;
       background: #eee;
       color: #222;
-      font-size: 1.5em;
+      font-size: 1.7em;
       border: none;
       border-radius: 50%;
-      width: 34px; height: 34px;
+      width: 42px; height: 42px;
       cursor: pointer;
       box-shadow: 0 2px 8px #ccc;
       transition: background 0.2s;
@@ -379,26 +384,27 @@
     }
     .modal .modal-details {
       text-align: center;
-      font-size: 1.07em;
+      font-size: 1.09em;
       margin-top: 13px;
       color: #444;
       line-height: 1.7;
       font-family: 'Tajawal',Arial,sans-serif;
       background: #f6f6f6;
-      border-radius: 8px;
-      padding: 10px 8px;
+      border-radius: 16px;
+      padding: 12px 14px;
       margin-bottom: 6px;
     }
     @media (max-width:1000px) {
-      .products-carousel {gap:14px;}
-      .product-card {min-width:180px;max-width:99vw;}
+      .products-carousel {gap:18px;}
+      .product-card {min-width:240px;max-width:99vw;}
       .brand-btn-title {font-size:1em; height:44px;}
+      .product-card img {width:150px;height:150px;}
     }
     @media (max-width:800px) {
       .brand-btn-title {height:36px; font-size:0.95em;}
       .products-carousel {gap:11px;}
       .product-card {min-width:120px;max-width:93vw;}
-      .product-card img, .modal img {width:80px;height:80px;}
+      .product-card img, .modal img {width:90px;height:90px;}
       .modal {padding: 10px 5px 10px 5px; max-width: 98vw;}
       .modal .close-btn, .img-modal .close-btn {width:28px;height:28px;font-size:1em;}
     }
@@ -409,6 +415,9 @@
       .brands-section {padding:12px 0 0 0;}
       .brand-btn-title {padding:7px 2vw;height:30px;font-size:0.93em;}
       .brand-btn-title span {font-size:0.98em;}
+      .products-carousel {gap:7px;}
+      .product-card {min-width:90vw;max-width:99vw;padding:18px 5px 18px 5px;}
+      .product-card img {width:70vw;height:70vw;}
     }
   </style>
   <script type="module">
