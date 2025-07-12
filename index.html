@@ -123,7 +123,6 @@
       background: #eee;
       border-radius: 5px;
     }
-    /* زيادة حجم إطار وصورة المنتج */
     .product-card {
       flex: 0 0 370px;
       background: #fff;
@@ -217,6 +216,17 @@
       border-radius: 10px;
       padding: 4px 14px;
       display: inline-block;
+    }
+    .min-order-note {
+      font-size: 1em;
+      color: #e74c3c;
+      background: #fff5f5;
+      border-radius: 9px;
+      padding: 7px 0 7px 0;
+      margin: 7px 0 0 0;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 1px 7px #e74c3c11;
     }
     .no-products {
       padding: 28px 0 0 0;
@@ -436,7 +446,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // جلب كل الماركات (الأزرار)
     async function getBrands() {
       const q = query(collection(db, "brands"));
       const querySnapshot = await getDocs(q);
@@ -447,7 +456,6 @@
       return brands;
     }
 
-    // جلب المنتجات حسب الماركة
     async function getProductsByBrand(brand) {
       const q = query(collection(db, "products"), where("brand", "==", brand));
       const querySnapshot = await getDocs(q);
@@ -458,20 +466,17 @@
       return products;
     }
 
-    // بناء واجهة جميع الماركات مع المنتجات بشكل أفقي (سلايدر يمين ويسار)
     async function renderBrandsWithProducts() {
       const brands = await getBrands();
       const brandsSection = document.getElementById('brands-section');
       brandsSection.innerHTML = '';
       for (let i = 0; i < brands.length; i++) {
         const brand = brands[i];
-        // عنصر ماركة وزرها المستطيل الطويل
         const brandBlock = document.createElement('div');
         brandBlock.className = 'brand-block';
         brandBlock.innerHTML = `<div class="brand-btn-title"><span>${brand}</span></div><div class="products-carousel" id="products-${brand.replace(/\s+/g,'_')}"></div>`;
         brandsSection.appendChild(brandBlock);
 
-        // جلب منتجات هذه الماركة
         const products = await getProductsByBrand(brand);
         const productsDiv = brandBlock.querySelector('.products-carousel');
         if (products.length === 0) {
@@ -493,17 +498,16 @@
                   </div>
                   <div class="brand-label">${prod.brand}</div>
                 </div>
+                <div class="min-order-note">اقل عدد للطلب هو 3 قطع</div>
               </div>
             `;
           });
-          // نافذة المنتج المنبثقة للصورة
           productsDiv.querySelectorAll('.product-card .product-image').forEach(img => {
             img.onclick = (e) => {
               e.stopPropagation();
               showImageModal(img.src, img.alt);
             };
           });
-          // نافذة تفاصيل المنتج
           productsDiv.querySelectorAll('.product-card').forEach(card => {
             card.onclick = (e) => {
               if (e.target.classList.contains('product-image')) return;
@@ -515,7 +519,6 @@
       }
     }
 
-    // نافذة التفاصيل المنبثقة
     function showModal(prod) {
       const discount = prod.oldPrice && prod.price
         ? ((prod.oldPrice - prod.price) / prod.oldPrice * 100).toFixed(0)
@@ -541,7 +544,6 @@
       modalBg.onclick = e => { if(e.target === modalBg) modalBg.style.display='none'; };
     }
 
-    // نافذة الصورة المنبثقة فقط
     function showImageModal(src, alt) {
       const imgModalBg = document.getElementById('img-modal-bg');
       const imgModal = document.getElementById('img-modal');
