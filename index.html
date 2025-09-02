@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأدمن</title>
+    <title>واصل لاند</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -81,10 +81,6 @@
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
         }
         
-        .stats-card.orange {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        }
-        
         .order-card {
             transition: all 0.3s ease;
         }
@@ -147,11 +143,83 @@
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 50%;
+            transform: translateX(50%);
+            background: #f56565;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(50%) translateY(0);
+        }
+        
+        .toast.success {
+            background: #48bb78;
+        }
+        
+        .toast.error {
+            background: #f56565;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <div class="flex items-center">
+            <i id="toastIcon" class="fas fa-info-circle ml-2"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="glass-effect rounded-2xl p-8 w-full max-w-md animate-fade-in">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-user text-3xl text-indigo-600"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">واصل لاند</h1>
+                <p class="text-white/80">مرحباً بك، يرجى تسجيل الدخول</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div class="relative">
+                    <i class="fas fa-user absolute right-4 top-4 text-white/60"></i>
+                    <input type="text" id="username" required 
+                           placeholder="اسم المستخدم"
+                           class="w-full pr-12 pl-4 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent">
+                </div>
+                
+                <div class="relative">
+                    <i class="fas fa-lock absolute right-4 top-4 text-white/60"></i>
+                    <input type="password" id="password" required 
+                           placeholder="كلمة المرور"
+                           class="w-full pr-12 pl-4 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-white text-indigo-600 py-4 px-6 rounded-xl hover:bg-white/90 transition-all font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-sign-in-alt ml-2"></i>
+                    تسجيل الدخول
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Dashboard Section -->
-    <div id="dashboardSection" class="min-h-screen">
+    <div id="dashboardSection" class="hidden min-h-screen">
         <!-- Top Navigation -->
         <nav class="gradient-bg shadow-lg sticky top-0 z-40">
             <div class="px-6 py-4">
@@ -162,11 +230,11 @@
                         </button>
                         <div class="flex items-center space-x-3 space-x-reverse">
                             <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                                <i class="fas fa-shield-alt text-indigo-600"></i>
+                                <i class="fas fa-user text-indigo-600"></i>
                             </div>
                             <div class="text-white">
-                                <h2 class="font-bold text-lg">لوحة تحكم الأدمن</h2>
-                                <p class="text-sm text-white/80">إدارة النظام</p>
+                                <h2 class="font-bold text-lg">واصل لاند</h2>
+                                <p class="text-sm text-white/80" id="welcomeText">مرحباً بك</p>
                             </div>
                         </div>
                     </div>
@@ -178,10 +246,13 @@
                                 <div class="text-xs">إجمالي الطلبات</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-lg font-bold" id="totalUsersNav">0</div>
-                                <div class="text-xs">المستخدمين</div>
+                                <div class="text-lg font-bold" id="deliveredOrdersNav">0</div>
+                                <div class="text-xs">طلبات مستلمة</div>
                             </div>
                         </div>
+                        <button onclick="logout()" class="p-2 rounded-lg bg-red-500/80 text-white hover:bg-red-600 transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -196,46 +267,42 @@
                 <div class="p-6 border-b border-white/20">
                     <div class="flex items-center space-x-3 space-x-reverse">
                         <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                            <i class="fas fa-cogs text-indigo-600 text-xl"></i>
+                            <i class="fas fa-shopping-cart text-indigo-600 text-xl"></i>
                         </div>
                         <div class="text-white">
-                            <h3 class="font-bold text-lg">لوحة الإدارة</h3>
-                            <p class="text-sm text-white/80">إدارة شاملة للنظام</p>
+                            <h3 class="font-bold text-lg">إدارة الطلبات</h3>
+                            <p class="text-sm text-white/80">لوحة التحكم الشخصية</p>
                         </div>
                     </div>
                 </div>
                 
                 <nav class="mt-6 px-4">
-                    <a href="#" onclick="showSection('dashboard')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
-                        <i class="fas fa-tachometer-alt text-xl ml-4"></i>
-                        <span class="font-medium">لوحة المعلومات</span>
+                    <a href="#" onclick="showSection('statistics')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
+                        <i class="fas fa-chart-bar text-xl ml-4"></i>
+                        <span class="font-medium">الإحصائيات</span>
+                    </a>
+                    <a href="#" onclick="showSection('addOrder')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
+                        <i class="fas fa-plus-circle text-xl ml-4"></i>
+                        <span class="font-medium">إضافة طلب</span>
                     </a>
                     <a href="#" onclick="showSection('orders')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
-                        <i class="fas fa-shopping-cart text-xl ml-4"></i>
-                        <span class="font-medium">إدارة الطلبات</span>
-                    </a>
-                    <a href="#" onclick="showSection('users')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
-                        <i class="fas fa-users text-xl ml-4"></i>
-                        <span class="font-medium">إدارة المستخدمين</span>
+                        <i class="fas fa-list-alt text-xl ml-4"></i>
+                        <span class="font-medium">الطلبات</span>
                     </a>
                     <a href="#" onclick="showSection('withdrawals')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
                         <i class="fas fa-money-bill-wave text-xl ml-4"></i>
-                        <span class="font-medium">طلبات السحب</span>
-                    </a>
-                    <a href="#" onclick="showSection('reports')" class="sidebar-item flex items-center px-4 py-4 text-white/90 hover:text-white rounded-xl mb-2">
-                        <i class="fas fa-chart-line text-xl ml-4"></i>
-                        <span class="font-medium">التقارير</span>
+                        <span class="font-medium">السحوبات</span>
                     </a>
                 </nav>
             </div>
 
             <!-- Main Content -->
             <div class="flex-1 lg:mr-72 min-h-screen bg-gray-50">
-                <!-- Dashboard Section -->
-                <div id="dashboardSection" class="section-content p-6">
+                <!-- Statistics Section -->
+                <div id="statisticsSection" class="section-content p-6">
                     <div class="mb-8">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">لوحة المعلومات</h1>
-                        <p class="text-gray-600">نظرة عامة على النظام والإحصائيات</p>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">الإحصائيات</h1>
+                        <p class="text-gray-600">نظرة عامة على طلباتك وأرباحك</p>
                     </div>
                     
                     <!-- Stats Cards -->
@@ -267,11 +334,11 @@
                         <div class="stats-card blue rounded-2xl p-6 text-white card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-white/80 text-sm font-medium">المستخدمين</p>
-                                    <p class="text-3xl font-bold" id="totalUsers">0</p>
+                                    <p class="text-white/80 text-sm font-medium">طلبات راجعة</p>
+                                    <p class="text-3xl font-bold" id="returnedOrders">0</p>
                                 </div>
                                 <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-users text-2xl"></i>
+                                    <i class="fas fa-undo text-2xl"></i>
                                 </div>
                             </div>
                         </div>
@@ -279,72 +346,134 @@
                         <div class="stats-card purple rounded-2xl p-6 text-white card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-white/80 text-sm font-medium">طلبات السحب</p>
-                                    <p class="text-3xl font-bold" id="totalWithdrawals">0</p>
+                                    <p class="text-white/80 text-sm font-medium">الأرباح الحالية</p>
+                                    <p class="text-3xl font-bold" id="currentEarnings">0</p>
                                 </div>
                                 <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-money-bill-wave text-2xl"></i>
+                                    <i class="fas fa-coins text-2xl"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Recent Activity -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                <i class="fas fa-clock text-blue-600 ml-3"></i>
-                                آخر الطلبات
-                            </h3>
-                            <div id="recentOrders" class="space-y-3">
-                                <!-- Recent orders will be loaded here -->
+                    <!-- Withdraw Section -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-money-bill-wave text-green-600 ml-3"></i>
+                            سحب الأرباح
+                        </h3>
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <p class="text-gray-600">الأرباح المتاحة للسحب:</p>
+                                <p class="text-2xl font-bold text-green-600"><span id="availableEarnings">0</span> دينار</p>
                             </div>
+                            <button id="withdrawBtn" onclick="withdrawEarnings()" 
+                                    class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+                                <i class="fas fa-download ml-2"></i>
+                                سحب الأرباح
+                            </button>
                         </div>
-                        
-                        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                <i class="fas fa-exclamation-triangle text-orange-600 ml-3"></i>
-                                طلبات تحتاج متابعة
-                            </h3>
-                            <div id="pendingOrders" class="space-y-3">
-                                <!-- Pending orders will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Add Order Section -->
+                <div id="addOrderSection" class="section-content hidden p-6">
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">إضافة طلب جديد</h1>
+                        <p class="text-gray-600">أضف طلب جديد إلى النظام</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                        <form id="orderForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-hashtag text-indigo-600 ml-2"></i>
+                                        رقم الطلب
+                                    </label>
+                                    <input type="text" id="orderNumber" readonly 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 cursor-not-allowed">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-money-bill text-green-600 ml-2"></i>
+                                        المبلغ (دينار عراقي) *
+                                    </label>
+                                    <input type="number" id="orderAmount" required min="1500" step="100"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <p class="text-xs text-gray-500 mt-1">الحد الأدنى: 1500 دينار عراقي</p>
+                                </div>
                             </div>
-                        </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-map-marker-alt text-red-600 ml-2"></i>
+                                    العنوان *
+                                </label>
+                                <textarea id="orderAddress" required rows="3"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-phone text-blue-600 ml-2"></i>
+                                        الهاتف الأول *
+                                    </label>
+                                    <input type="tel" id="orderPhone1" required 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-phone text-blue-600 ml-2"></i>
+                                        الهاتف الثاني
+                                    </label>
+                                    <input type="tel" id="orderPhone2" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button type="submit" class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3 px-6 rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+                                    <i class="fas fa-plus ml-2"></i>
+                                    إضافة الطلب
+                                </button>
+                                <button type="button" onclick="document.getElementById('orderForm').reset(); setOrderNumber();" 
+                                        class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-6 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+                                    <i class="fas fa-eraser ml-2"></i>
+                                    مسح الحقول
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
                 <!-- Orders Section -->
                 <div id="ordersSection" class="section-content hidden p-6">
                     <div class="mb-8">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">إدارة الطلبات</h1>
-                        <p class="text-gray-600">عرض وإدارة جميع الطلبات في النظام</p>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">الطلبات</h1>
+                        <p class="text-gray-600">عرض وإدارة طلباتك</p>
                     </div>
                     
-                    <!-- Search and Filters -->
+                    <!-- Search -->
                     <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="relative">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="flex-1 relative">
                                 <i class="fas fa-search absolute right-4 top-3 text-gray-400"></i>
-                                <input type="text" id="orderSearchInput" placeholder="البحث في الطلبات..." 
+                                <input type="text" id="searchInput" placeholder="البحث في الطلبات..." 
                                        class="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                             </div>
-                            <select id="statusFilter" class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                                <option value="">جميع الحالات</option>
-                                <option value="بانتظار المندوب">بانتظار المندوب</option>
-                                <option value="تم التسليم للمندوب">تم التسليم للمندوب</option>
-                                <option value="تم الاستلام من قبل الزبون">تم الاستلام من قبل الزبون</option>
-                                <option value="راجع">راجع</option>
-                                <option value="تم الإرجاع">تم الإرجاع</option>
-                            </select>
-                            <button onclick="filterOrders()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-                                <i class="fas fa-filter ml-2"></i>
-                                تطبيق الفلتر
+                            <button onclick="searchOrders()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                                <i class="fas fa-search ml-2"></i>
+                                بحث
                             </button>
                         </div>
                     </div>
                     
                     <div id="ordersContainer" class="space-y-4"></div>
-                    <div id="noOrdersFound" class="hidden text-center py-12">
+                    <div id="noOrders" class="hidden text-center py-12">
                         <div class="text-gray-400 text-6xl mb-4">
                             <i class="fas fa-clipboard-list"></i>
                         </div>
@@ -353,118 +482,28 @@
                     </div>
                 </div>
 
-                <!-- Users Section -->
-                <div id="usersSection" class="section-content hidden p-6">
-                    <div class="mb-8">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">إدارة المستخدمين</h1>
-                        <p class="text-gray-600">إضافة وإدارة المستخدمين</p>
-                    </div>
-                    
-                    <!-- Add User Form -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                            <i class="fas fa-user-plus text-green-600 ml-3"></i>
-                            إضافة مستخدم جديد
-                        </h3>
-                        <form id="addUserForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">اسم المستخدم *</label>
-                                <input type="text" id="newUsername" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">كلمة المرور *</label>
-                                <input type="password" id="newPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">العنوان</label>
-                                <input type="text" id="newAddress" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">رقم الهاتف</label>
-                                <input type="tel" id="newPhone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            </div>
-                            <div class="md:col-span-2">
-                                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
-                                    <i class="fas fa-plus ml-2"></i>
-                                    إضافة المستخدم
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Users List -->
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                            <i class="fas fa-users text-blue-600 ml-3"></i>
-                            قائمة المستخدمين
-                        </h3>
-                        <div id="usersContainer" class="space-y-4"></div>
-                    </div>
-                </div>
-
                 <!-- Withdrawals Section -->
                 <div id="withdrawalsSection" class="section-content hidden p-6">
                     <div class="mb-8">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">طلبات السحب</h1>
-                        <p class="text-gray-600">إدارة طلبات سحب الأرباح</p>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">تاريخ السحوبات</h1>
+                        <p class="text-gray-600">عرض تاريخ عمليات سحب الأرباح</p>
                     </div>
                     
-                    <div id="withdrawalsContainer" class="space-y-4"></div>
-                    <div id="noWithdrawalsFound" class="hidden text-center py-12">
+                    <div id="withdrawalHistory" class="space-y-4"></div>
+                    <div id="noWithdrawals" class="hidden text-center py-12">
                         <div class="text-gray-400 text-6xl mb-4">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
-                        <h3 class="text-xl font-medium text-gray-600 mb-2">لا توجد طلبات سحب</h3>
-                        <p class="text-gray-500">لم يتم العثور على أي طلبات سحب</p>
-                    </div>
-                </div>
-
-                <!-- Reports Section -->
-                <div id="reportsSection" class="section-content hidden p-6">
-                    <div class="mb-8">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">التقارير</h1>
-                        <p class="text-gray-600">تقارير مفصلة عن النظام</p>
-                    </div>
-                    
-                    <!-- Report Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                                <i class="fas fa-chart-pie text-purple-600 ml-3"></i>
-                                توزيع الطلبات
-                            </h3>
-                            <div id="orderDistribution" class="space-y-2">
-                                <!-- Order distribution will be loaded here -->
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                                <i class="fas fa-calendar-alt text-green-600 ml-3"></i>
-                                إحصائيات شهرية
-                            </h3>
-                            <div id="monthlyStats" class="space-y-2">
-                                <!-- Monthly stats will be loaded here -->
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                                <i class="fas fa-trophy text-orange-600 ml-3"></i>
-                                أفضل المستخدمين
-                            </h3>
-                            <div id="topUsers" class="space-y-2">
-                                <!-- Top users will be loaded here -->
-                            </div>
-                        </div>
+                        <h3 class="text-xl font-medium text-gray-600 mb-2">لا توجد سحوبات</h3>
+                        <p class="text-gray-500">لم تقم بأي عمليات سحب حتى الآن</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Order Modal -->
-    <div id="editOrderModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <!-- Edit Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in">
             <div class="p-6 border-b border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800 flex items-center">
@@ -473,45 +512,34 @@
                 </h3>
             </div>
             
-            <form id="editOrderForm" class="p-6 space-y-4">
+            <form id="editForm" class="p-6 space-y-4">
                 <input type="hidden" id="editOrderId">
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
-                    <select id="editOrderStatus" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                        <option value="بانتظار المندوب">بانتظار المندوب</option>
-                        <option value="تم التسليم للمندوب">تم التسليم للمندوب</option>
-                        <option value="تم الاستلام من قبل الزبون">تم الاستلام من قبل الزبون</option>
-                        <option value="راجع">راجع</option>
-                        <option value="تم الإرجاع">تم الإرجاع</option>
-                    </select>
-                </div>
-                
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">العنوان</label>
-                    <textarea id="editOrderAddress" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+                    <textarea id="editAddress" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">الهاتف الأول</label>
-                    <input type="tel" id="editOrderPhone1" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <input type="tel" id="editPhone1" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">الهاتف الثاني</label>
-                    <input type="tel" id="editOrderPhone2" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <input type="tel" id="editPhone2" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">المبلغ</label>
-                    <input type="number" id="editOrderAmount" min="1500" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <input type="number" id="editAmount" min="1500" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                 </div>
                 
                 <div class="flex gap-4 pt-4">
                     <button type="submit" class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-2 px-4 rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all">
                         حفظ التغييرات
                     </button>
-                    <button type="button" onclick="closeEditOrderModal()" class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2 px-4 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2 px-4 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all">
                         إلغاء
                     </button>
                 </div>
@@ -554,6 +582,44 @@
         </div>
     </div>
 
+    <!-- Order Confirmation Modal -->
+    <div id="orderConfirmationModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in">
+            <div class="p-6 text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">تم إضافة الطلب بنجاح!</h3>
+                <div class="bg-gray-50 rounded-xl p-4 mb-6 text-right">
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="font-medium text-gray-700">رقم الطلب:</div>
+                        <div class="text-gray-900" id="confOrderNumber"></div>
+                        
+                        <div class="font-medium text-gray-700">المبلغ:</div>
+                        <div class="text-gray-900" id="confOrderAmount"></div>
+                        
+                        <div class="font-medium text-gray-700">العنوان:</div>
+                        <div class="text-gray-900" id="confOrderAddress"></div>
+                        
+                        <div class="font-medium text-gray-700">الهاتف:</div>
+                        <div class="text-gray-900" id="confOrderPhone"></div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button onclick="closeOrderConfirmationModal(); showSection('orders');" class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-2 px-4 rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all">
+                        <i class="fas fa-list ml-2"></i>
+                        عرض الطلبات
+                    </button>
+                    <button onclick="closeOrderConfirmationModal(); document.getElementById('orderForm').reset(); setOrderNumber();" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all">
+                        <i class="fas fa-plus ml-2"></i>
+                        طلب جديد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -571,265 +637,213 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let allOrders = [];
+        let currentUser = null;
+        let userOrders = [];
         let filteredOrders = [];
-        let allUsers = [];
-        let allWithdrawals = [];
+        let userWithdrawals = [];
 
-        // Initialize the application
-        function initializeApp() {
-            loadAllOrders();
-            loadAllUsers();
-            loadAllWithdrawals();
-            showSection('dashboard');
+        // Show toast notification
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMessage.textContent = message;
+            toast.className = 'toast';
+            
+            if (type === 'success') {
+                toast.classList.add('success');
+                toastIcon.className = 'fas fa-check-circle ml-2';
+            } else {
+                toast.classList.add('error');
+                toastIcon.className = 'fas fa-exclamation-circle ml-2';
+            }
+            
+            toast.classList.remove('hidden');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
+            }, 3000);
         }
 
-        // Load all orders
-        function loadAllOrders() {
-            database.ref('orders').on('value', (snapshot) => {
-                allOrders = [];
+        // Check for saved login on page load
+        function checkSavedLogin() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+                loadUserOrders();
+                loadUserWithdrawals();
+                setOrderNumber(); // Set initial order number
+            }
+        }
+
+        // Generate unique order number
+        function generateOrderNumber() {
+            return Math.floor(10000000 + Math.random() * 90000000).toString();
+        }
+
+        // Check if order number exists
+        function checkOrderNumberExists(orderNumber) {
+            return database.ref('orders').orderByChild('orderNumber').equalTo(orderNumber).once('value')
+                .then(snapshot => snapshot.exists());
+        }
+
+        // Generate unique order number that doesn't exist
+        async function generateUniqueOrderNumber() {
+            let orderNumber;
+            let exists = true;
+            
+            while (exists) {
+                orderNumber = generateOrderNumber();
+                exists = await checkOrderNumberExists(orderNumber);
+            }
+            
+            return orderNumber;
+        }
+
+        // Set order number when form loads
+        async function setOrderNumber() {
+            const orderNumber = await generateUniqueOrderNumber();
+            document.getElementById('orderNumber').value = orderNumber;
+        }
+
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showToast('يرجى إدخال اسم المستخدم وكلمة المرور');
+                return;
+            }
+            
+            // Check credentials in Firebase
+            database.ref('users').orderByChild('username').equalTo(username).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        let userFound = false;
+                        snapshot.forEach((childSnapshot) => {
+                            const userData = childSnapshot.val();
+                            if (userData.password === password) {
+                                userFound = true;
+                                currentUser = {
+                                    id: childSnapshot.key,
+                                    username: userData.username,
+                                    address: userData.address || '',
+                                    phone1: userData.phone1 || '',
+                                    phone2: userData.phone2 || ''
+                                };
+                                
+                                // Save login info to localStorage
+                                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                                
+                                showDashboard();
+                                loadUserOrders();
+                                loadUserWithdrawals();
+                                setOrderNumber(); // Set initial order number
+                                return false; // Break the loop
+                            }
+                        });
+                        
+                        if (!userFound) {
+                            showToast('كلمة المرور غير صحيحة');
+                        }
+                    } else {
+                        showToast('اسم المستخدم غير موجود');
+                    }
+                })
+                .catch((error) => {
+                    showToast('حدث خطأ في تسجيل الدخول: ' + error.message);
+                });
+        });
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('welcomeText').textContent = `مرحباً، ${currentUser.username}`;
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Load user orders
+        function loadUserOrders() {
+            if (!currentUser) return;
+            
+            database.ref('orders').orderByChild('username').equalTo(currentUser.username).on('value', (snapshot) => {
+                userOrders = [];
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const order = {
                             id: childSnapshot.key,
                             ...childSnapshot.val()
                         };
-                        allOrders.push(order);
+                        // Hide orders based on status and withdrawal status
+                        // Hide delivered orders that have been withdrawn
+                        // Hide returned orders that have been marked as "تم الإرجاع"
+                        const shouldHide = (order.withdrawnByUser && order.status === 'تم الاستلام من قبل الزبون') || 
+                                         (order.status === 'تم الإرجاع');
+                        
+                        if (!shouldHide) {
+                            userOrders.push(order);
+                        }
                     });
                 }
-                filteredOrders = [...allOrders];
+                filteredOrders = [...userOrders];
                 displayOrders();
-                updateDashboardStats();
-                updateNavStats();
-                loadRecentOrders();
-                loadPendingOrders();
-                generateReports();
-            });
-        }
-
-        // Load all users
-        function loadAllUsers() {
-            database.ref('users').on('value', (snapshot) => {
-                allUsers = [];
-                if (snapshot.exists()) {
-                    snapshot.forEach((childSnapshot) => {
-                        const user = {
-                            id: childSnapshot.key,
-                            ...childSnapshot.val()
-                        };
-                        allUsers.push(user);
-                    });
-                }
-                displayUsers();
-                updateDashboardStats();
+                updateStatistics();
                 updateNavStats();
             });
         }
 
-        // Load all withdrawals
-        function loadAllWithdrawals() {
-            database.ref('withdrawals').on('value', (snapshot) => {
-                allWithdrawals = [];
+        // Update navigation stats
+        function updateNavStats() {
+            const totalOrders = userOrders.length;
+            const deliveredOrders = userOrders.filter(order => order.status === 'تم الاستلام من قبل الزبون').length;
+            
+            document.getElementById('totalOrdersNav').textContent = totalOrders;
+            document.getElementById('deliveredOrdersNav').textContent = deliveredOrders;
+        }
+
+        // Load user withdrawals
+        function loadUserWithdrawals() {
+            if (!currentUser) return;
+            
+            database.ref('withdrawals').orderByChild('username').equalTo(currentUser.username).on('value', (snapshot) => {
+                userWithdrawals = [];
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const withdrawal = {
                             id: childSnapshot.key,
                             ...childSnapshot.val()
                         };
-                        allWithdrawals.push(withdrawal);
+                        userWithdrawals.push(withdrawal);
                     });
                 }
                 displayWithdrawals();
-                updateDashboardStats();
             });
-        }
-
-        // Update dashboard statistics
-        function updateDashboardStats() {
-            const totalOrders = allOrders.length;
-            const deliveredOrders = allOrders.filter(order => order.status === 'تم الاستلام من قبل الزبون').length;
-            const totalUsers = allUsers.length;
-            const totalWithdrawals = allWithdrawals.length;
-
-            document.getElementById('totalOrders').textContent = totalOrders;
-            document.getElementById('deliveredOrders').textContent = deliveredOrders;
-            document.getElementById('totalUsers').textContent = totalUsers;
-            document.getElementById('totalWithdrawals').textContent = totalWithdrawals;
-        }
-
-        // Update navigation stats
-        function updateNavStats() {
-            const totalOrders = allOrders.length;
-            const totalUsers = allUsers.length;
-            
-            document.getElementById('totalOrdersNav').textContent = totalOrders;
-            document.getElementById('totalUsersNav').textContent = totalUsers;
-        }
-
-        // Load recent orders for dashboard
-        function loadRecentOrders() {
-            const recentOrders = allOrders
-                .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
-                .slice(0, 5);
-
-            const container = document.getElementById('recentOrders');
-            if (recentOrders.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">لا توجد طلبات حديثة</p>';
-                return;
-            }
-
-            container.innerHTML = recentOrders.map(order => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <p class="font-medium text-gray-800">طلب #${order.orderNumber || order.id}</p>
-                        <p class="text-sm text-gray-600">${order.username}</p>
-                    </div>
-                    <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}">
-                        ${order.status || 'بانتظار المندوب'}
-                    </span>
-                </div>
-            `).join('');
-        }
-
-        // Load pending orders for dashboard
-        function loadPendingOrders() {
-            const pendingOrders = allOrders.filter(order => 
-                order.status === 'بانتظار المندوب' || order.status === 'تم التسليم للمندوب'
-            ).slice(0, 5);
-
-            const container = document.getElementById('pendingOrders');
-            if (pendingOrders.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">لا توجد طلبات معلقة</p>';
-                return;
-            }
-
-            container.innerHTML = pendingOrders.map(order => `
-                <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                    <div>
-                        <p class="font-medium text-gray-800">طلب #${order.orderNumber || order.id}</p>
-                        <p class="text-sm text-gray-600">${order.username}</p>
-                    </div>
-                    <button onclick="editOrder('${order.id}')" class="px-3 py-1 bg-orange-500 text-white rounded-lg text-xs hover:bg-orange-600 transition-colors">
-                        متابعة
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // Display orders
-        function displayOrders() {
-            const container = document.getElementById('ordersContainer');
-            const noOrders = document.getElementById('noOrdersFound');
-
-            if (filteredOrders.length === 0) {
-                container.innerHTML = '';
-                noOrders.classList.remove('hidden');
-                return;
-            }
-
-            noOrders.classList.add('hidden');
-            container.innerHTML = filteredOrders.map(order => `
-                <div class="order-card bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all animate-fade-in shadow-lg">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1">
-                            <h4 class="font-bold text-lg text-gray-900 flex items-center">
-                                <i class="fas fa-shopping-bag text-indigo-600 ml-3"></i>
-                                طلب #${order.orderNumber || order.id}
-                            </h4>
-                            <p class="text-gray-600 flex items-center mt-1">
-                                <i class="fas fa-user text-gray-400 ml-2"></i>
-                                المستخدم: ${order.username}
-                            </p>
-                            <p class="text-gray-600 flex items-center mt-1">
-                                <i class="fas fa-calendar text-gray-400 ml-2"></i>
-                                تاريخ الإضافة: ${order.dateAdded ? new Date(order.dateAdded).toLocaleDateString('en-GB') : 'غير محدد'}
-                            </p>
-                        </div>
-                        <div class="flex space-x-2 space-x-reverse">
-                            <button onclick="editOrder('${order.id}')" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-                                <i class="fas fa-edit ml-1"></i>
-                                تعديل
-                            </button>
-                            <button onclick="deleteOrder('${order.id}')" class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
-                                <i class="fas fa-trash ml-1"></i>
-                                حذف
-                            </button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm mb-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-map-marker-alt text-red-600 ml-2"></i>
-                            <span class="font-medium text-gray-700">العنوان:</span>
-                            <span class="text-gray-900 mr-2">${order.address || 'غير محدد'}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-phone text-blue-600 ml-2"></i>
-                            <span class="font-medium text-gray-700">الهاتف الأول:</span>
-                            <span class="text-gray-900 mr-2">${order.phone1 || 'غير محدد'}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-phone text-blue-600 ml-2"></i>
-                            <span class="font-medium text-gray-700">الهاتف الثاني:</span>
-                            <span class="text-gray-900 mr-2">${order.phone2 || 'غير محدد'}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-money-bill text-green-600 ml-2"></i>
-                            <span class="font-medium text-gray-700">المبلغ:</span>
-                            <span class="text-gray-900 mr-2">${order.amount || '0'} دينار</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="font-medium text-gray-700 flex items-center">
-                            <i class="fas fa-info-circle text-gray-600 ml-2"></i>
-                            الحالة:
-                        </span>
-                        <div class="flex items-center">
-                            <span class="px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(order.status)} shadow-sm border">
-                                ${getStatusIcon(order.status)} ${order.status || 'بانتظار المندوب'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Display users
-        function displayUsers() {
-            const container = document.getElementById('usersContainer');
-            
-            if (allUsers.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-8">لا يوجد مستخدمين</p>';
-                return;
-            }
-
-            container.innerHTML = allUsers.map(user => `
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between">
-                    <div class="flex items-center space-x-4 space-x-reverse">
-                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-indigo-600"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900">${user.username}</h4>
-                            <p class="text-sm text-gray-600">${user.address || 'لا يوجد عنوان'}</p>
-                            <p class="text-sm text-gray-600">${user.phone1 || 'لا يوجد هاتف'}</p>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 space-x-reverse">
-                        <button onclick="deleteUser('${user.id}')" class="px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors">
-                            <i class="fas fa-trash ml-1"></i>
-                            حذف
-                        </button>
-                    </div>
-                </div>
-            `).join('');
         }
 
         // Display withdrawals
         function displayWithdrawals() {
-            const container = document.getElementById('withdrawalsContainer');
-            const noWithdrawals = document.getElementById('noWithdrawalsFound');
+            const container = document.getElementById('withdrawalHistory');
+            const noWithdrawals = document.getElementById('noWithdrawals');
 
-            if (allWithdrawals.length === 0) {
+            if (userWithdrawals.length === 0) {
                 container.innerHTML = '';
                 noWithdrawals.classList.remove('hidden');
                 return;
@@ -838,7 +852,7 @@
             noWithdrawals.classList.add('hidden');
             
             // Sort withdrawals by date (newest first)
-            const sortedWithdrawals = allWithdrawals.sort((a, b) => 
+            const sortedWithdrawals = userWithdrawals.sort((a, b) => 
                 new Date(b.dateRequested) - new Date(a.dateRequested)
             );
 
@@ -852,23 +866,13 @@
                                 <i class="fas fa-receipt text-indigo-600 ml-2"></i>
                                 طلب سحب #${withdrawal.id}
                             </h4>
-                            <p class="text-sm text-gray-600 mt-1">المستخدم: ${withdrawal.username}</p>
                             <p class="text-sm text-gray-600 mt-1">تاريخ الطلب: ${new Date(withdrawal.dateRequested).toLocaleDateString('ar-EG')}</p>
                         </div>
-                        <div class="flex space-x-2 space-x-reverse">
-                            ${withdrawal.status === 'قيد المراجعة' ? `
-                                <button onclick="approveWithdrawal('${withdrawal.id}')" class="px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors">
-                                    <i class="fas fa-check ml-1"></i>
-                                    موافقة
-                                </button>
-                                <button onclick="rejectWithdrawal('${withdrawal.id}')" class="px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors">
-                                    <i class="fas fa-times ml-1"></i>
-                                    رفض
-                                </button>
-                            ` : ''}
-                        </div>
+                        <span class="px-4 py-2 rounded-full text-sm font-medium ${statusColor}">
+                            ${withdrawal.status}
+                        </span>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
                         <div class="flex items-center">
                             <i class="fas fa-money-bill text-green-600 ml-2"></i>
                             <span class="font-medium text-gray-700">المبلغ:</span>
@@ -880,125 +884,9 @@
                             <span class="text-gray-900 mr-2">${withdrawal.ordersCount}</span>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span class="font-medium text-gray-700">الحالة:</span>
-                        <span class="px-4 py-2 rounded-full text-sm font-medium ${statusColor}">
-                            ${withdrawal.status}
-                        </span>
-                    </div>
                 </div>
             `;
             }).join('');
-        }
-
-        // Generate reports
-        function generateReports() {
-            generateOrderDistribution();
-            generateMonthlyStats();
-            generateTopUsers();
-        }
-
-        // Generate order distribution report
-        function generateOrderDistribution() {
-            const statusCounts = {};
-            allOrders.forEach(order => {
-                const status = order.status || 'بانتظار المندوب';
-                statusCounts[status] = (statusCounts[status] || 0) + 1;
-            });
-
-            const container = document.getElementById('orderDistribution');
-            container.innerHTML = Object.entries(statusCounts).map(([status, count]) => `
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">${status}</span>
-                    <span class="font-bold text-indigo-600">${count}</span>
-                </div>
-            `).join('');
-        }
-
-        // Generate monthly stats
-        function generateMonthlyStats() {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            
-            const monthlyOrders = allOrders.filter(order => {
-                if (!order.dateAdded) return false;
-                const orderDate = new Date(order.dateAdded);
-                return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
-            });
-
-            const deliveredThisMonth = monthlyOrders.filter(order => order.status === 'تم الاستلام من قبل الزبون').length;
-            const totalRevenue = monthlyOrders
-                .filter(order => order.status === 'تم الاستلام من قبل الزبون')
-                .reduce((total, order) => total + (parseFloat(order.amount) || 0), 0);
-
-            const container = document.getElementById('monthlyStats');
-            container.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">طلبات هذا الشهر</span>
-                    <span class="font-bold text-green-600">${monthlyOrders.length}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">طلبات مستلمة</span>
-                    <span class="font-bold text-green-600">${deliveredThisMonth}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">إجمالي الإيرادات</span>
-                    <span class="font-bold text-green-600">${totalRevenue.toLocaleString()} د.ع</span>
-                </div>
-            `;
-        }
-
-        // Generate top users report
-        function generateTopUsers() {
-            const userStats = {};
-            allOrders.forEach(order => {
-                if (!userStats[order.username]) {
-                    userStats[order.username] = { total: 0, delivered: 0 };
-                }
-                userStats[order.username].total++;
-                if (order.status === 'تم الاستلام من قبل الزبون') {
-                    userStats[order.username].delivered++;
-                }
-            });
-
-            const topUsers = Object.entries(userStats)
-                .sort(([,a], [,b]) => b.delivered - a.delivered)
-                .slice(0, 5);
-
-            const container = document.getElementById('topUsers');
-            if (topUsers.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">لا توجد بيانات</p>';
-                return;
-            }
-
-            container.innerHTML = topUsers.map(([username, stats]) => `
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">${username}</span>
-                    <span class="font-bold text-orange-600">${stats.delivered} طلب</span>
-                </div>
-            `).join('');
-        }
-
-        // Get status color
-        function getStatusColor(status) {
-            switch(status) {
-                case 'تم الاستلام من قبل الزبون': return 'bg-green-100 text-green-800 border-green-200';
-                case 'تم التسليم للمندوب': return 'bg-blue-100 text-blue-800 border-blue-200';
-                case 'راجع': return 'bg-red-100 text-red-800 border-red-200';
-                case 'تم الإرجاع': return 'bg-gray-100 text-gray-800 border-gray-200';
-                default: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            }
-        }
-
-        // Get status icon
-        function getStatusIcon(status) {
-            switch(status) {
-                case 'تم الاستلام من قبل الزبون': return '✅';
-                case 'تم التسليم للمندوب': return '🚚';
-                case 'راجع': return '↩️';
-                case 'تم الإرجاع': return '🔄';
-                default: return '⏳';
-            }
         }
 
         // Get withdrawal status color
@@ -1011,297 +899,465 @@
             }
         }
 
-        // Show/Hide sections
-        function showSection(section) {
-            // Hide all sections
-            document.querySelectorAll('.section-content').forEach(el => {
-                el.classList.add('hidden');
-            });
+        // Update statistics - only count delivered orders for earnings
+        function updateStatistics() {
+            const totalOrders = userOrders.length;
+            const deliveredOrders = userOrders.filter(order => order.status === 'تم الاستلام من قبل الزبون').length;
+            const returnedOrders = userOrders.filter(order => order.status === 'راجع').length;
             
-            // Remove active class from all sidebar items
-            document.querySelectorAll('.sidebar-item').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(section + 'Section').classList.remove('hidden');
-            
-            // Add active class to clicked sidebar item
-            event.target.closest('.sidebar-item').classList.add('active');
+            // Calculate earnings only from delivered orders with 1500 deduction per order
+            const currentEarnings = userOrders
+                .filter(order => order.status === 'تم الاستلام من قبل الزبون')
+                .reduce((total, order) => {
+                    const orderAmount = parseFloat(order.amount) || 0;
+                    const profit = orderAmount - 1500; // Deduct 1500 from each order
+                    return total + Math.max(profit, 0); // Don't allow negative profits
+                }, 0);
 
-            // Hide sidebar on mobile after selection
-            if (window.innerWidth < 1024) {
-                toggleSidebar();
-            }
-        }
-
-        // Toggle sidebar for mobile
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
+            document.getElementById('totalOrders').textContent = totalOrders;
+            document.getElementById('deliveredOrders').textContent = deliveredOrders;
+            document.getElementById('returnedOrders').textContent = returnedOrders;
+            document.getElementById('currentEarnings').textContent = currentEarnings.toLocaleString();
+            document.getElementById('availableEarnings').textContent = currentEarnings.toLocaleString();
             
-            if (sidebar.classList.contains('translate-x-full')) {
-                sidebar.classList.remove('translate-x-full');
-                sidebar.classList.add('show');
-                overlay.classList.remove('hidden');
+            // Disable withdraw button if no earnings
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            if (currentEarnings <= 0) {
+                withdrawBtn.disabled = true;
+                withdrawBtn.innerHTML = '<i class="fas fa-ban ml-2"></i>لا توجد أرباح للسحب';
+                withdrawBtn.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                sidebar.classList.add('translate-x-full');
-                sidebar.classList.remove('show');
-                overlay.classList.add('hidden');
+                withdrawBtn.disabled = false;
+                withdrawBtn.innerHTML = '<i class="fas fa-download ml-2"></i>سحب الأرباح';
+                withdrawBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        // Filter orders
-        function filterOrders() {
-            const searchTerm = document.getElementById('orderSearchInput').value.toLowerCase().trim();
-            const statusFilter = document.getElementById('statusFilter').value;
+        // Display orders
+        function displayOrders() {
+            const container = document.getElementById('ordersContainer');
+            const noOrders = document.getElementById('noOrders');
+
+            if (filteredOrders.length === 0) {
+                container.innerHTML = '';
+        noOrders.classList.remove('hidden');
+        return;
+    }
+
+    noOrders.classList.add('hidden');
+    container.innerHTML = filteredOrders.map(order => {
+        // Cannot edit if: delivered, handed to courier, returned, or marked as "تم الإرجاع"
+        const canEdit = order.status !== 'تم الاستلام من قبل الزبون' && 
+                       order.status !== 'تم التسليم للمندوب' && 
+                       order.status !== 'راجع' && 
+                       order.status !== 'تم الإرجاع';
+        
+        return `
+        <div class="order-card bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all animate-fade-in shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <h4 class="font-bold text-lg text-gray-900 flex items-center">
+                        <i class="fas fa-shopping-bag text-indigo-600 ml-3"></i>
+                        طلب #${order.orderNumber || order.id}
+                    </h4>
+                    <p class="text-gray-600 flex items-center mt-1">
+                        <i class="fas fa-calendar text-gray-400 ml-2"></i>
+                        تاريخ الإضافة: ${order.dateAdded ? new Date(order.dateAdded).toLocaleDateString('en-GB') : 'غير محدد'}
+                    </p>
+                </div>
+                <div class="flex space-x-2 space-x-reverse">
+                    ${canEdit ? `
+                        <button onclick="editOrder('${order.id}')" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                            <i class="fas fa-edit ml-1"></i>
+                            تعديل
+                        </button>
+                        <button onclick="deleteOrder('${order.id}')" class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                            <i class="fas fa-trash ml-1"></i>
+                            حذف
+                        </button>
+                    ` : `
+                        <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm">
+                            <i class="fas fa-lock ml-1"></i>
+                            لا يمكن التعديل
+                        </span>
+                    `}
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-map-marker-alt text-red-600 ml-2"></i>
+                    <span class="font-medium text-gray-700">العنوان:</span>
+                    <span class="text-gray-900 mr-2">${order.address || 'غير محدد'}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-phone text-blue-600 ml-2"></i>
+                    <span class="font-medium text-gray-700">الهاتف الأول:</span>
+                    <span class="text-gray-900 mr-2">${order.phone1 || 'غير محدد'}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-phone text-blue-600 ml-2"></i>
+                    <span class="font-medium text-gray-700">الهاتف الثاني:</span>
+                    <span class="text-gray-900 mr-2">${order.phone2 || 'غير محدد'}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-money-bill text-green-600 ml-2"></i>
+                    <span class="font-medium text-gray-700">المبلغ:</span>
+                    <span class="text-gray-900 mr-2">${order.amount || '0'} دينار</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="font-medium text-gray-700 flex items-center">
+                    <i class="fas fa-info-circle text-gray-600 ml-2"></i>
+                    الحالة:
+                </span>
+                <div class="flex items-center">
+                    <span class="px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(order.status)} shadow-sm border">
+                        ${getStatusIcon(order.status)} ${order.status || 'بانتظار المندوب'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+    }).join('');
+}
+
+// Get status color
+function getStatusColor(status) {
+    switch(status) {
+        case 'تم الاستلام من قبل الزبون': return 'bg-green-100 text-green-800 border-green-200';
+        case 'تم التسليم للمندوب': return 'bg-blue-100 text-blue-800 border-blue-200';
+        case 'راجع': return 'bg-red-100 text-red-800 border-red-200';
+        case 'تم الإرجاع': return 'bg-gray-100 text-gray-800 border-gray-200';
+        default: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+}
+
+// Get status icon
+function getStatusIcon(status) {
+    switch(status) {
+        case 'تم الاستلام من قبل الزبون': return '✅';
+        case 'تم التسليم للمندوب': return '🚚';
+        case 'راجع': return '↩️';
+        case 'تم الإرجاع': return '🔄';
+        default: return '⏳';
+    }
+}
+
+// Show/Hide sections
+function showSection(section) {
+    // Hide all sections
+    document.querySelectorAll('.section-content').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // Remove active class from all sidebar items
+    document.querySelectorAll('.sidebar-item').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(section + 'Section').classList.remove('hidden');
+    
+    // Add active class to clicked sidebar item
+    event.target.closest('.sidebar-item').classList.add('active');
+
+    // Hide sidebar on mobile after selection
+    if (window.innerWidth < 1024) {
+        toggleSidebar();
+    }
+}
+
+// Toggle sidebar for mobile
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    
+    if (sidebar.classList.contains('translate-x-full')) {
+        sidebar.classList.remove('translate-x-full');
+        sidebar.classList.add('show');
+        overlay.classList.remove('hidden');
+    } else {
+        sidebar.classList.add('translate-x-full');
+        sidebar.classList.remove('show');
+        overlay.classList.add('hidden');
+    }
+}
+
+// Search orders
+function searchOrders() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        filteredOrders = [...userOrders];
+    } else {
+        filteredOrders = userOrders.filter(order => 
+            (order.address && order.address.toLowerCase().includes(searchTerm)) ||
+            (order.phone1 && order.phone1.includes(searchTerm)) ||
+            (order.phone2 && order.phone2.includes(searchTerm)) ||
+            (order.orderNumber && order.orderNumber.includes(searchTerm)) ||
+            (order.id && order.id.toLowerCase().includes(searchTerm))
+        );
+    }
+    
+    displayOrders();
+}
+
+// Show order confirmation modal
+function showOrderConfirmationModal(orderData) {
+    document.getElementById('confOrderNumber').textContent = orderData.orderNumber;
+    document.getElementById('confOrderAmount').textContent = orderData.amount + ' دينار';
+    document.getElementById('confOrderAddress').textContent = orderData.address;
+    document.getElementById('confOrderPhone').textContent = orderData.phone1 + (orderData.phone2 ? ' / ' + orderData.phone2 : '');
+    
+    document.getElementById('orderConfirmationModal').classList.remove('hidden');
+    document.getElementById('orderConfirmationModal').classList.add('flex');
+}
+
+// Close order confirmation modal
+function closeOrderConfirmationModal() {
+    document.getElementById('orderConfirmationModal').classList.add('hidden');
+    document.getElementById('orderConfirmationModal').classList.remove('flex');
+}
+
+// Handle add order form
+document.getElementById('orderForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!currentUser) {
+        showToast('يرجى تسجيل الدخول أولاً');
+        return;
+    }
+
+    // Get form values
+    const address = document.getElementById('orderAddress').value.trim();
+    const phone1 = document.getElementById('orderPhone1').value.trim();
+    const phone2 = document.getElementById('orderPhone2').value.trim();
+    const amount = parseFloat(document.getElementById('orderAmount').value);
+    const orderNumber = document.getElementById('orderNumber').value;
+
+    // Validate required fields
+    if (!address || !phone1 || !amount || !orderNumber) {
+        showToast('يرجى ملء جميع الحقول المطلوبة (العنوان، الهاتف الأول، المبلغ)');
+        return;
+    }
+
+    // Validate amount (must be >= 1500)
+    if (amount < 1500) {
+        showToast('يجب أن يكون مبلغ الطلب 1500 دينار عراقي أو أكثر');
+        return;
+    }
+    
+    const newOrder = {
+        username: currentUser.username,
+        orderNumber: orderNumber,
+        address: address,
+        phone1: phone1,
+        phone2: phone2,
+        amount: amount,
+        status: 'بانتظار المندوب',
+        dateAdded: new Date().toISOString()
+    };
+
+    database.ref('orders').push(newOrder)
+        .then(() => {
+            // Show confirmation modal with order details
+            showOrderConfirmationModal(newOrder);
             
-            filteredOrders = allOrders.filter(order => {
-                const matchesSearch = !searchTerm || 
-                    (order.address && order.address.toLowerCase().includes(searchTerm)) ||
-                    (order.phone1 && order.phone1.includes(searchTerm)) ||
-                    (order.phone2 && order.phone2.includes(searchTerm)) ||
-                    (order.orderNumber && order.orderNumber.includes(searchTerm)) ||
-                    (order.username && order.username.toLowerCase().includes(searchTerm)) ||
-                    (order.id && order.id.toLowerCase().includes(searchTerm));
-                
-                const matchesStatus = !statusFilter || order.status === statusFilter;
-                
-                return matchesSearch && matchesStatus;
-            });
+            // Reset form and generate new order number
+            document.getElementById('orderForm').reset();
+            setOrderNumber();
+        })
+        .catch((error) => {
+            showToast('حدث خطأ في إضافة الطلب: ' + error.message);
+        });
+});
+
+// Edit order
+function editOrder(orderId) {
+    const order = userOrders.find(o => o.id === orderId);
+    if (!order) return;
+
+    document.getElementById('editOrderId').value = orderId;
+    document.getElementById('editAddress').value = order.address || '';
+    document.getElementById('editPhone1').value = order.phone1 || '';
+    document.getElementById('editPhone2').value = order.phone2 || '';
+    document.getElementById('editAmount').value = order.amount || '';
+
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').classList.add('flex');
+}
+
+// Close edit modal
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    document.getElementById('editModal').classList.remove('flex');
+}
+
+// Delete order
+function deleteOrder(orderId) {
+    showConfirmModal(
+        'حذف الطلب',
+        'هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.',
+        '🗑️',
+        function() {
+            database.ref('orders/' + orderId).remove()
+                .then(() => {
+                    closeConfirmModal();
+                    showSuccessModal('تم حذف الطلب بنجاح! ✅');
+                })
+                .catch((error) => {
+                    closeConfirmModal();
+                    showToast('حدث خطأ في حذف الطلب: ' + error.message);
+                });
+        }
+    );
+}
+
+// Handle edit form submission
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const orderId = document.getElementById('editOrderId').value;
+    const amount = parseFloat(document.getElementById('editAmount').value);
+
+    // Validate amount (must be >= 1500)
+    if (amount < 1500) {
+        showToast('يجب أن يكون مبلغ الطلب 1500 دينار عراقي أو أكثر');
+        return;
+    }
+
+    const updatedOrder = {
+        address: document.getElementById('editAddress').value,
+        phone1: document.getElementById('editPhone1').value,
+        phone2: document.getElementById('editPhone2').value,
+        amount: amount
+    };
+
+    database.ref('orders/' + orderId).update(updatedOrder)
+        .then(() => {
+            closeEditModal();
+            showSuccessModal('تم تحديث الطلب بنجاح! ✅');
+        })
+        .catch((error) => {
+            showToast('حدث خطأ في تحديث الطلب: ' + error.message);
+        });
+});
+
+// Show confirmation modal
+function showConfirmModal(title, message, icon, onConfirm) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmIcon').textContent = icon;
+    document.getElementById('confirmButton').onclick = onConfirm;
+    document.getElementById('confirmModal').classList.remove('hidden');
+    document.getElementById('confirmModal').classList.add('flex');
+}
+
+// Close confirmation modal
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.add('hidden');
+    document.getElementById('confirmModal').classList.remove('flex');
+}
+
+// Show success modal
+function showSuccessModal(message) {
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('successModal').classList.remove('hidden');
+    document.getElementById('successModal').classList.add('flex');
+}
+
+// Close success modal
+function closeSuccessModal() {
+    document.getElementById('successModal').classList.add('hidden');
+    document.getElementById('successModal').classList.remove('flex');
+}
+
+// Withdraw earnings
+function withdrawEarnings() {
+    if (!currentUser) return;
+    
+    const deliveredOrders = userOrders.filter(order => order.status === 'تم الاستلام من قبل الزبون');
+    const totalEarnings = deliveredOrders.reduce((total, order) => {
+        const orderAmount = parseFloat(order.amount) || 0;
+        const profit = orderAmount - 1500; // Deduct 1500 from each order
+        return total + Math.max(profit, 0); // Don't allow negative profits
+    }, 0);
+    
+    if (totalEarnings <= 0) {
+        showConfirmModal(
+            'لا توجد أرباح للسحب',
+            'لا توجد أرباح متاحة للسحب في الوقت الحالي. يجب أن يكون لديك طلبات مستلمة لتتمكن من سحب الأرباح.',
+            '💰',
+            closeConfirmModal
+        );
+        return;
+    }
+    
+    showConfirmModal(
+        'تأكيد سحب الأرباح',
+        `هل أنت متأكد من سحب ${totalEarnings.toLocaleString()} دينار؟\n\nسيتم حذف جميع الطلبات المستلمة (${deliveredOrders.length} طلب) وتصفير الأرباح الحالية. هذا الإجراء لا يمكن التراجع عنه.`,
+        '💰',
+        function() {
+            closeConfirmModal();
+            processWithdrawal(totalEarnings, deliveredOrders);
+        }
+    );
+}
+
+// Process withdrawal
+function processWithdrawal(totalEarnings, deliveredOrders) {
+    // Create withdrawal request
+    const withdrawalRequest = {
+        username: currentUser.username,
+        amount: totalEarnings,
+        ordersCount: deliveredOrders.length,
+        status: 'قيد المراجعة',
+        dateRequested: new Date().toISOString()
+    };
+    
+    // Add withdrawal request to database
+    database.ref('withdrawals').push(withdrawalRequest)
+        .then(() => {
+            // Mark only delivered orders as withdrawn (hide from user but keep in database for admin)
+            // Returned orders remain visible until admin changes status to "تم الإرجاع"
+            const updatePromises = deliveredOrders.map(order => 
+                database.ref('orders/' + order.id).update({
+                    withdrawnByUser: true,
+                    withdrawnDate: new Date().toISOString()
+                })
+            );
             
-            displayOrders();
-        }
-
-        // Edit order
-        function editOrder(orderId) {
-            const order = allOrders.find(o => o.id === orderId);
-            if (!order) return;
-
-            document.getElementById('editOrderId').value = orderId;
-            document.getElementById('editOrderStatus').value = order.status || 'بانتظار المندوب';
-            document.getElementById('editOrderAddress').value = order.address || '';
-            document.getElementById('editOrderPhone1').value = order.phone1 || '';
-            document.getElementById('editOrderPhone2').value = order.phone2 || '';
-            document.getElementById('editOrderAmount').value = order.amount || '';
-
-            document.getElementById('editOrderModal').classList.remove('hidden');
-            document.getElementById('editOrderModal').classList.add('flex');
-        }
-
-        // Close edit order modal
-        function closeEditOrderModal() {
-            document.getElementById('editOrderModal').classList.add('hidden');
-            document.getElementById('editOrderModal').classList.remove('flex');
-        }
-
-        // Delete order
-        function deleteOrder(orderId) {
-            showConfirmModal(
-                'حذف الطلب',
-                'هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.',
-                '🗑️',
-                function() {
-                    database.ref('orders/' + orderId).remove()
-                        .then(() => {
-                            closeConfirmModal();
-                            showSuccessModal('تم حذف الطلب بنجاح! ✅');
-                        })
-                        .catch((error) => {
-                            closeConfirmModal();
-                            alert('حدث خطأ في حذف الطلب: ' + error.message);
-                        });
-                }
+            return Promise.all(updatePromises);
+        })
+        .then(() => {
+            showSuccessModal(
+                `تم إرسال طلب السحب بنجاح! 🎉\n\nالمبلغ: ${totalEarnings.toLocaleString()} دينار\nعدد الطلبات: ${deliveredOrders.length}\n\nسيتم مراجعة طلبك من قبل الإدارة وستحصل على إشعار عند الموافقة أو الرفض.`
             );
-        }
-
-        // Delete user
-        function deleteUser(userId) {
+        })
+        .catch((error) => {
             showConfirmModal(
-                'حذف المستخدم',
-                'هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف جميع طلباته أيضاً.',
-                '🗑️',
-                function() {
-                    const user = allUsers.find(u => u.id === userId);
-                    if (!user) return;
-
-                    // Delete user's orders first
-                    const userOrders = allOrders.filter(order => order.username === user.username);
-                    const deleteOrderPromises = userOrders.map(order => 
-                        database.ref('orders/' + order.id).remove()
-                    );
-
-                    Promise.all(deleteOrderPromises)
-                        .then(() => {
-                            // Then delete the user
-                            return database.ref('users/' + userId).remove();
-                        })
-                        .then(() => {
-                            closeConfirmModal();
-                            showSuccessModal('تم حذف المستخدم وجميع طلباته بنجاح! ✅');
-                        })
-                        .catch((error) => {
-                            closeConfirmModal();
-                            alert('حدث خطأ في حذف المستخدم: ' + error.message);
-                        });
-                }
-            );
-        }
-
-        // Approve withdrawal
-        function approveWithdrawal(withdrawalId) {
-            showConfirmModal(
-                'الموافقة على السحب',
-                'هل أنت متأكد من الموافقة على طلب السحب هذا؟',
-                '✅',
-                function() {
-                    database.ref('withdrawals/' + withdrawalId).update({
-                        status: 'تم الدفع',
-                        dateProcessed: new Date().toISOString()
-                    })
-                    .then(() => {
-                        closeConfirmModal();
-                        showSuccessModal('تم الموافقة على طلب السحب! ✅');
-                    })
-                    .catch((error) => {
-                        closeConfirmModal();
-                        alert('حدث خطأ في معالجة الطلب: ' + error.message);
-                    });
-                }
-            );
-        }
-
-        // Reject withdrawal
-        function rejectWithdrawal(withdrawalId) {
-            showConfirmModal(
-                'رفض السحب',
-                'هل أنت متأكد من رفض طلب السحب هذا؟',
+                'خطأ في العملية',
+                'حدث خطأ في عملية السحب: ' + error.message,
                 '❌',
-                function() {
-                    database.ref('withdrawals/' + withdrawalId).update({
-                        status: 'مرفوض',
-                        dateProcessed: new Date().toISOString()
-                    })
-                    .then(() => {
-                        closeConfirmModal();
-                        showSuccessModal('تم رفض طلب السحب! ❌');
-                    })
-                    .catch((error) => {
-                        closeConfirmModal();
-                        alert('حدث خطأ في معالجة الطلب: ' + error.message);
-                    });
-                }
+                closeConfirmModal
             );
-        }
-
-        // Handle edit order form submission
-        document.getElementById('editOrderForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const orderId = document.getElementById('editOrderId').value;
-            const amount = parseFloat(document.getElementById('editOrderAmount').value);
-
-            // Validate amount (must be >= 1500)
-            if (amount < 1500) {
-                alert('يجب أن يكون مبلغ الطلب 1500 دينار عراقي أو أكثر');
-                return;
-            }
-
-            const updatedOrder = {
-                status: document.getElementById('editOrderStatus').value,
-                address: document.getElementById('editOrderAddress').value,
-                phone1: document.getElementById('editOrderPhone1').value,
-                phone2: document.getElementById('editOrderPhone2').value,
-                amount: amount
-            };
-
-            database.ref('orders/' + orderId).update(updatedOrder)
-                .then(() => {
-                    closeEditOrderModal();
-                    showSuccessModal('تم تحديث الطلب بنجاح! ✅');
-                })
-                .catch((error) => {
-                    alert('حدث خطأ في تحديث الطلب: ' + error.message);
-                });
         });
+}
 
-        // Handle add user form
-        document.getElementById('addUserForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('newUsername').value.trim();
-            const password = document.getElementById('newPassword').value.trim();
-            const address = document.getElementById('newAddress').value.trim();
-            const phone = document.getElementById('newPhone').value.trim();
+// Handle search on Enter key
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchOrders();
+    }
+});
 
-            if (!username || !password) {
-                alert('يرجى إدخال اسم المستخدم وكلمة المرور');
-                return;
-            }
+// Initialize the application
+checkSavedLogin();
 
-            // Check if username already exists
-            const existingUser = allUsers.find(user => user.username === username);
-            if (existingUser) {
-                alert('اسم المستخدم موجود بالفعل');
-                return;
-            }
-
-            const newUser = {
-                username: username,
-                password: password,
-                address: address,
-                phone1: phone,
-                dateCreated: new Date().toISOString()
-            };
-
-            database.ref('users').push(newUser)
-                .then(() => {
-                    showSuccessModal('تم إضافة المستخدم بنجاح! 🎉');
-                    document.getElementById('addUserForm').reset();
-                })
-                .catch((error) => {
-                    alert('حدث خطأ في إضافة المستخدم: ' + error.message);
-                });
-        });
-
-        // Show confirmation modal
-        function showConfirmModal(title, message, icon, onConfirm) {
-            document.getElementById('confirmTitle').textContent = title;
-            document.getElementById('confirmMessage').textContent = message;
-            document.getElementById('confirmIcon').textContent = icon;
-            document.getElementById('confirmButton').onclick = onConfirm;
-            document.getElementById('confirmModal').classList.remove('hidden');
-            document.getElementById('confirmModal').classList.add('flex');
-        }
-
-        // Close confirmation modal
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            document.getElementById('confirmModal').classList.remove('flex');
-        }
-
-        // Show success modal
-        function showSuccessModal(message) {
-            document.getElementById('successMessage').textContent = message;
-            document.getElementById('successModal').classList.remove('hidden');
-            document.getElementById('successModal').classList.add('flex');
-        }
-
-        // Close success modal
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-            document.getElementById('successModal').classList.remove('flex');
-        }
-
-        // Handle search on Enter key
-        document.getElementById('orderSearchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                filterOrders();
-            }
-        });
-
-        // Initialize the application when page loads
-        initializeApp();
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97891c0cc5d247fa',t:'MTc1Njc3NTIzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+// Show statistics section by default
+setTimeout(() => {
+    showSection('statistics');
+}, 100);
+</script>
+</body>
 </html>
